@@ -425,11 +425,10 @@ inline v_float32x4 v_matmul(const v_float32x4& v, const v_float32x4& m0,
                             const v_float32x4& m1, const v_float32x4& m2,
                             const v_float32x4& m3)
 {
-    float32x2_t vl = vget_low_f32(v.val), vh = vget_high_f32(v.val);
-    float32x4_t res = vmulq_lane_f32(m0.val, vl, 0);
-    res = vmlaq_lane_f32(res, m1.val, vl, 1);
-    res = vmlaq_lane_f32(res, m2.val, vh, 0);
-    res = vmlaq_lane_f32(res, m3.val, vh, 1);
+    float32x4_t res = vmulq_laneq_f32(m0.val, v.val, 0);
+    res = vfmaq_laneq_f32(res, m1.val, v.val, 1);
+    res = vfmaq_laneq_f32(res, m2.val, v.val, 2);
+    res = vfmaq_laneq_f32(res, m3.val, v.val, 3);
     return v_float32x4(res);
 }
 
@@ -437,11 +436,9 @@ inline v_float32x4 v_matmuladd(const v_float32x4& v, const v_float32x4& m0,
                                const v_float32x4& m1, const v_float32x4& m2,
                                const v_float32x4& a)
 {
-    float32x2_t vl = vget_low_f32(v.val), vh = vget_high_f32(v.val);
-    float32x4_t res = vmulq_lane_f32(m0.val, vl, 0);
-    res = vmlaq_lane_f32(res, m1.val, vl, 1);
-    res = vmlaq_lane_f32(res, m2.val, vh, 0);
-    res = vaddq_f32(res, a.val);
+    float32x4_t res = vfmaq_laneq_f32(a.val, m0.val, v.val, 0);
+    res = vfmaq_laneq_f32(res, m1.val, v.val, 1);
+    res = vfmaq_laneq_f32(res, m2.val, v.val, 2);
     return v_float32x4(res);
 }
 
