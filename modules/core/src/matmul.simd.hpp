@@ -1606,7 +1606,7 @@ transform_16u( const ushort* src, ushort* dst, const float* m, int len, int scn,
 static void
 transform_32f( const float* src, float* dst, const float* m, int len, int scn, int dcn )
 {
-#if CV_SIMD && !defined(__aarch64__) && !defined(_M_ARM64)
+#if CV_SIMD
     int x = 0;
     if( scn == 3 && dcn == 3 )
     {

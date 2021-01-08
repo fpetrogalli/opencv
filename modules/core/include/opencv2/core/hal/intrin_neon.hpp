@@ -437,11 +437,18 @@ inline v_float32x4 v_matmuladd(const v_float32x4& v, const v_float32x4& m0,
                                const v_float32x4& m1, const v_float32x4& m2,
                                const v_float32x4& a)
 {
+#ifdef __arm__
     float32x2_t vl = vget_low_f32(v.val), vh = vget_high_f32(v.val);
     float32x4_t res = vmulq_lane_f32(m0.val, vl, 0);
     res = vmlaq_lane_f32(res, m1.val, vl, 1);
     res = vmlaq_lane_f32(res, m2.val, vh, 0);
     res = vaddq_f32(res, a.val);
+#endif
+#ifdef __aarch64__
+    float32x4_t res = vfmaq_laneq_f32(a.val, m0.val, v.val, 0);
+    res = vfmaq_laneq_f32(res, m1.val, v.val, 1);
+    res = vfmaq_laneq_f32(res, m2.val, v.val, 2);
+#endif
     return v_float32x4(res);
 }
 
@@ -1299,6 +1306,7 @@ inline double v_reduce_sum(const v_float64x2& a)
 inline v_float32x4 v_reduce_sum4(const v_float32x4& a, const v_float32x4& b,
                                  const v_float32x4& c, const v_float32x4& d)
 {
+#ifdef __arm__
     float32x4x2_t ab = vtrnq_f32(a.val, b.val);
     float32x4x2_t cd = vtrnq_f32(c.val, d.val);
 
@@ -1309,6 +1317,15 @@ inline v_float32x4 v_reduce_sum4(const v_float32x4& a, const v_float32x4& b,
     float32x4_t v1 = vcombine_f32(vget_high_f32(u0), vget_high_f32(u1));
 
     return v_float32x4(vaddq_f32(v0, v1));
+#endif
+#ifdef __aarch64__
+   // a[0]+a[1], a[2]+a[3], b[0]+b[1], b[2]+b[3]
+  float32x4_t aabb = vpaddq_f32(a.val, b.val);
+   // c[0]+c[1], c[2]+c[3], d[0]+d[1], d[2] + d[3]
+  float32x4_t ccdd = vpaddq_f32(c.val, d.val);
+  // a[0]+...+a[3], b[0]+..., c[0]+..., d[0]+...+d[3]
+  return v_float32x4(vpaddq_f32(aabb, ccdd));
+#endif
 }
 
 inline unsigned v_reduce_sad(const v_uint8x16& a, const v_uint8x16& b)
